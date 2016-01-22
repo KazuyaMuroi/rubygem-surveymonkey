@@ -64,11 +64,15 @@ module Surveymonkey
         pagination_field = PaginatedMethods.fetch(method_name, nil)
         if pagination_field
           $log.info sprintf("calling method '%s' with pagination, page size %i", method_name, page_size)
-          paginate_request(method_name, pagination_field, page_size, method_params)
+          resp = paginate_request(method_name, pagination_field, page_size, method_params)
         else
           $log.info sprintf("calling method '%s' without pagination", method_name)
-          Surveymonkey::Request.new(method_name.to_s, method_params).execute
+          resp = Surveymonkey::Request.new(method_name.to_s, method_params).execute
         end
+
+        # This is tentative deal, because of SurveyMoneky API allows only 2 times/sec.
+        sleep 1
+        resp
 
       rescue TypeError => e
         $log.fatal sprintf("%s: method parameters must be a hash", __method__)
